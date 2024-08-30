@@ -9,6 +9,6 @@ setup(
     author_email='cykim8811@snu.ac.kr',
     packages=find_packages(include=['pyqsim']),
     install_requires=[
-        'cirq'
+        'numpy'
     ]
 )

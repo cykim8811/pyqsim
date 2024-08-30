@@ -1,33 +1,36 @@
 
 
-from typing import List
-from cirq.devices import line_qubit
+import numpy as np
+
+from .qubit import QubitCollection
+from . import qgate
 
 from collections import deque
+from typing import List
 
 
 class QuantumOperation:
     n: int
-    reg: List[line_qubit.LineQubit]
+    _reg: QubitCollection | None
     alive: bool
     children: List['QuantumOperation']
 
     def __init__(self, n: int):
         self.n = n
-        self.reg = line_qubit.LineQubit.range(n)
         self.alive = True
+        self.children = []
 
-    def __forward(self):
+    def __forward(self) -> None:
         raise NotImplementedError
 
-    def __backward(self):
+    def __backward(self) -> None:
         raise NotImplementedError
     
 
-    def initiate(self):
+    def initiate(self) -> None:
         self.__forward()
     
-    def finalize(self):
+    def finalize(self) -> None:
         queue: deque[QuantumOperation] = deque([self])
         order = []
         while queue:
@@ -45,7 +48,51 @@ class QuantumOperation:
         for current in order:
             if not current.alive:
                 current.__backward()
+    
+    @property
+    def reg(self) -> QubitCollection:
+        if self._reg is None:
+            raise ValueError("Quantum register is not initiated")
+        return self._reg
+    
+    
 
+class CreateOperation(QuantumOperation):
+    def __forward(self):
+        self._reg = QubitCollection(self.n)
+
+    def __backward(self):
+        self._reg = None
+
+
+class BitNotOperation(QuantumOperation):
+    def __init__(self, child: QuantumOperation):
+        super().__init__(child.n)
+        self.children.append(child)
+    
+    def __forward(self):
+        self._reg = QubitCollection(self.n)
+        qgate.BitCNOT(self.children[0].reg, self.reg)
+        qgate.BitX(self.reg)
+
+    def __backward(self):
+        qgate.BitX(self.reg)
+        qgate.BitCNOT(self.children[0].reg, self.reg)
+        # untangle if necessary
+        self._reg = None
+
+class InplaceNotOperation(QuantumOperation):
+    def __init__(self, child: QuantumOperation):
+        super().__init__(child.n)
+        self.children.append(child)
+    
+    def __forward(self):
+        self._reg = self.children[0].reg
+        qgate.BitX(self.reg)
+
+    def __backward(self):
+        qgate.BitX(self.reg)
+        self._reg = None
 
 
 class QuantumRegister:
