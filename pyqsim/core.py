@@ -3,6 +3,7 @@ import numpy as np
 
 from .qubit import QubitCollection
 from . import operations
+from . import qgate
 
 from collections import deque
 from typing import List
@@ -25,3 +26,8 @@ class QuantumRegister:
     def __invert__(self):
         return QuantumRegister(operations.BitNotOperation(self.transform))
     
+    def copy(self):
+        return QuantumRegister(operations.CopyOperation(self.transform))
+
+    def measure(self) -> int:
+        return qgate.measure(self.transform.reg)
