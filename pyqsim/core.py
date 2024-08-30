@@ -3,7 +3,7 @@ import numpy as np
 
 from .qubit import QubitCollection
 from . import operations
-from . import qgate
+from . import reggate
 
 from collections import deque
 from typing import List
@@ -19,7 +19,6 @@ class QuantumRegister:
         self.transform = transform
         self.transform.initiate()
 
-
     def __del__(self):
         self.transform.finalize()
 
@@ -30,4 +29,4 @@ class QuantumRegister:
         return QuantumRegister(operations.CopyOperation(self.transform))
 
     def measure(self) -> int:
-        return qgate.measure(self.transform.reg)
+        return reggate.measure(self.transform.reg)

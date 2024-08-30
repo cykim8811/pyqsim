@@ -1,6 +1,6 @@
 
 from .core import QubitCollection
-from . import qgate
+from . import reggate
 
 from collections import deque
 from typing import List
@@ -59,7 +59,7 @@ class CreateOperation(QuantumOperation):
         self._reg = QubitCollection(self.n)
 
     def backward(self):
-        qgate.measure(self.reg)
+        reggate.measure(self.reg)
         self._reg = None
 
 
@@ -70,11 +70,11 @@ class CopyOperation(QuantumOperation):
     
     def forward(self):
         self._reg = QubitCollection(self.n)
-        qgate.BitwiseCNOT(self.children[0].reg, self.reg)
+        reggate.BitwiseCNOT(self.children[0].reg, self.reg)
 
     def backward(self):
-        qgate.BitwiseCNOT(self.children[0].reg, self.reg)
-        qgate.measure(self.reg)
+        reggate.BitwiseCNOT(self.children[0].reg, self.reg)
+        reggate.measure(self.reg)
         self._reg = None
 
 
@@ -85,13 +85,13 @@ class BitNotOperation(QuantumOperation):
     
     def forward(self):
         self._reg = QubitCollection(self.n)
-        qgate.BitwiseCNOT(self.children[0].reg, self.reg)
-        qgate.BitwiseX(self.reg)
+        reggate.BitwiseCNOT(self.children[0].reg, self.reg)
+        reggate.BitwiseX(self.reg)
 
     def backward(self):
-        qgate.BitwiseX(self.reg)
-        qgate.BitwiseCNOT(self.children[0].reg, self.reg)
-        qgate.measure(self.reg)
+        reggate.BitwiseX(self.reg)
+        reggate.BitwiseCNOT(self.children[0].reg, self.reg)
+        reggate.measure(self.reg)
         self._reg = None
 
 class InplaceNotOperation(QuantumOperation):
@@ -101,9 +101,9 @@ class InplaceNotOperation(QuantumOperation):
     
     def forward(self):
         self._reg = self.children[0].reg
-        qgate.BitwiseX(self.reg)
+        reggate.BitwiseX(self.reg)
 
     def backward(self):
-        qgate.BitwiseX(self.reg)
+        reggate.BitwiseX(self.reg)
         self._reg = None
 
