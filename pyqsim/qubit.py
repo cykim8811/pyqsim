@@ -6,6 +6,7 @@ import numpy as np
 
 class QuantumState:
     qubits: List['Qubit']
+    state: np.ndarray
     def __init__(self, qubit: 'Qubit'):
         self.qubits = [qubit]
         self.state = np.array([1, 0], dtype=np.complex64)

@@ -72,12 +72,12 @@ class BitNotOperation(QuantumOperation):
     
     def __forward(self):
         self._reg = QubitCollection(self.n)
-        qgate.BitCNOT(self.children[0].reg, self.reg)
-        qgate.BitX(self.reg)
+        qgate.BitwiseCNOT(self.children[0].reg, self.reg)
+        qgate.BitwiseX(self.reg)
 
     def __backward(self):
-        qgate.BitX(self.reg)
-        qgate.BitCNOT(self.children[0].reg, self.reg)
+        qgate.BitwiseX(self.reg)
+        qgate.BitwiseCNOT(self.children[0].reg, self.reg)
         # untangle if necessary
         self._reg = None
 
@@ -88,10 +88,10 @@ class InplaceNotOperation(QuantumOperation):
     
     def __forward(self):
         self._reg = self.children[0].reg
-        qgate.BitX(self.reg)
+        qgate.BitwiseX(self.reg)
 
     def __backward(self):
-        qgate.BitX(self.reg)
+        qgate.BitwiseX(self.reg)
         self._reg = None
 
 
