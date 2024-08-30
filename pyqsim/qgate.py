@@ -73,7 +73,7 @@ def entangle(qubits: List[Qubit]) -> None:
         quantum_states[0].state = np.kron(quantum_states[i].state, quantum_states[0].state)
         quantum_states[0].qubits.extend(quantum_states[i].qubits)
     
-    for q in qubits:
+    for q in quantum_states[0].qubits:
         q.quantum_state = quantum_states[0]
 
 
