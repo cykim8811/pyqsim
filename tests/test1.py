@@ -1,9 +1,12 @@
 
 import pyqsim
 
-a = pyqsim.Qubit()
-b = pyqsim.Qubit()
+a = pyqsim.qint1_t()
 
-pyqsim.qubit_entangle([a, b])
+b = ~a
 
-print(a.quantum_state.state)
+print(b.transform.reg.qubits[0].quantum_state.state)
+
+del a
+del b
+

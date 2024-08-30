@@ -2,6 +2,7 @@
 from .core import *
 from .qgate import *
 from .qubit import *
+from .types import *
 
 
 __all__ = [
@@ -14,5 +15,8 @@ __all__ = [
     'CNOT',
     'entangle',
     'BitwiseX',
-    'BitwiseCNOT'
+    'BitwiseCNOT',
+    'qubit_entangle',
+    'qint4_t',
+    'qint1_t',
 ]
