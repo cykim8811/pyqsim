@@ -105,6 +105,5 @@ class InplaceNotOperation(QuantumOperation):
 
     def backward(self):
         qgate.BitwiseX(self.reg)
-        qgate.measure(self.reg)
         self._reg = None
 
