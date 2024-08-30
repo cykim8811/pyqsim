@@ -56,11 +56,25 @@ class QuantumOperation:
 
 class CreateOperation(QuantumOperation):
     def forward(self):
-        print("CreateOperation forward")
         self._reg = QubitCollection(self.n)
 
     def backward(self):
-        print("CreateOperation backward")
+        qgate.measure(self.reg)
+        self._reg = None
+
+
+class CopyOperation(QuantumOperation):
+    def __init__(self, child: QuantumOperation):
+        super().__init__(child.n)
+        self.children.append(child)
+    
+    def forward(self):
+        self._reg = QubitCollection(self.n)
+        qgate.BitwiseCNOT(self.children[0].reg, self.reg)
+
+    def backward(self):
+        qgate.BitwiseCNOT(self.children[0].reg, self.reg)
+        qgate.measure(self.reg)
         self._reg = None
 
 
@@ -70,16 +84,14 @@ class BitNotOperation(QuantumOperation):
         self.children.append(child)
     
     def forward(self):
-        print("BitNotOperation forward")
         self._reg = QubitCollection(self.n)
         qgate.BitwiseCNOT(self.children[0].reg, self.reg)
         qgate.BitwiseX(self.reg)
 
     def backward(self):
-        print("BitNotOperation backward")
         qgate.BitwiseX(self.reg)
         qgate.BitwiseCNOT(self.children[0].reg, self.reg)
-        # untangle if necessary
+        qgate.measure(self.reg)
         self._reg = None
 
 class InplaceNotOperation(QuantumOperation):
@@ -93,5 +105,6 @@ class InplaceNotOperation(QuantumOperation):
 
     def backward(self):
         qgate.BitwiseX(self.reg)
+        qgate.measure(self.reg)
         self._reg = None
 

@@ -1,12 +1,9 @@
 
 import pyqsim
 
-a = pyqsim.qint1_t()
+b = ~pyqsim.qint1_t()
 
-b = ~a
+c = pyqsim.QuantumRegister(pyqsim.operations.CopyOperation(b.transform))
 
-print(b.transform.reg.qubits[0].quantum_state.state)
 
-del a
-del b
-
+print(c.transform.reg.qubits[0].quantum_state.state)
