@@ -16,6 +16,13 @@ def X(q: Qubit) -> None:
 
     quantum_state.state = quantum_state.state[new_indices]
 
+def Z(q: Qubit) -> None:
+    quantum_state: QuantumState = q.quantum_state
+    index = quantum_state.qubits.index(q)
+    
+    mask = 1 << index
+
+    quantum_state.state[(np.arange(quantum_state.state.size) & mask) != 0] *= -1
 
 def CNOT(control: Qubit, target: Qubit) -> None:
     entangle([control, target])
@@ -28,6 +35,38 @@ def CNOT(control: Qubit, target: Qubit) -> None:
     new_indices = new_indices ^ ((1 << target_index) * ((new_indices >> control_index) & 1))
 
     quantum_state.state = quantum_state.state[new_indices]
+
+def MCX(controls: List[Qubit], target: Qubit) -> None:
+    entangle(controls + [target])
+    quantum_state = controls[0].quantum_state
+
+    control_indices = [quantum_state.qubits.index(q) for q in controls]
+    target_index = quantum_state.qubits.index(target)
+
+    mask = 0
+    for index in control_indices:
+        mask |= 1 << index
+
+    new_indices = np.arange(quantum_state.state.size)
+    new_indices = new_indices ^ ((1 << target_index) * ((new_indices & mask) == mask))
+
+    quantum_state.state = quantum_state.state[new_indices]
+
+def MCZ(controls: List[Qubit], target: Qubit | None = None) -> None:
+    if target is not None:
+        controls.append(target)
+    entangle(controls)
+    quantum_state = controls[0].quantum_state
+
+    control_indices = [quantum_state.qubits.index(q) for q in controls]
+
+    mask = 0
+    for index in control_indices:
+        mask |= 1 << index
+
+    target_indices = np.arange(quantum_state.state.size) & mask == mask
+
+    quantum_state.state[target_indices] *= -1
 
 def bit_measure(q: Qubit) -> int:
     quantum_state = q.quantum_state
@@ -75,4 +114,15 @@ def entangle(qubits: List[Qubit]) -> None:
     
     for q in quantum_states[0].qubits:
         q.quantum_state = quantum_states[0]
+
+def H(q: Qubit) -> None:
+    quantum_state = q.quantum_state
+    index = quantum_state.qubits.index(q)
+
+    mask = 1 << index
+
+    zero_indices = np.where((np.arange(quantum_state.state.size) & mask) == 0)
+    one_indices = np.where((np.arange(quantum_state.state.size) & mask) != 0)
+
+    quantum_state.state[zero_indices], quantum_state.state[one_indices] = (quantum_state.state[zero_indices] + quantum_state.state[one_indices]) / np.sqrt(2), (quantum_state.state[zero_indices] - quantum_state.state[one_indices]) / np.sqrt(2)
 
