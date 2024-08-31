@@ -36,3 +36,10 @@ class QuantumRegister:
 
     def __or__(self, other: 'QuantumRegister') -> 'QuantumRegister':
         return QuantumRegister(operations.BitOrOperation(self.transform, other.transform))
+
+    def __eq__(self, value: 'QuantumRegister | int') -> 'QuantumRegister':
+        if isinstance(value, int):
+            return QuantumRegister(operations.EqualImmediateOperation(self.transform, value))
+        
+        # return QuantumRegister(operations.EqualOperation(self.transform, value.transform))
+        raise NotImplementedError("Equality comparison between two quantum registers is not yet implemented")

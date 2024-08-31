@@ -7,3 +7,4 @@ def h(qr: QuantumRegister) -> QuantumRegister:
 
 def z(qr: QuantumRegister) -> None:
     operations.reggate.bitwiseZ(qr.transform.reg)
+

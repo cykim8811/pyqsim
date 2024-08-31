@@ -7,6 +7,12 @@ def bitwiseX(qc: QubitCollection) -> None:
     for q in qc.qubits:
         X(q)
 
+def maskedBitwiseX(qc: QubitCollection, mask: int) -> None:
+    for q in qc.qubits:
+        if mask & 1:
+            X(q)
+        mask >>= 1
+
 def bitwiseCNOT(control: QubitCollection, target: QubitCollection) -> None:
     if len(control.qubits) != len(target.qubits):
         raise ValueError("Control and target qubit collections must have the same length")
@@ -18,8 +24,9 @@ def measure(qc: QubitCollection) -> int:
     if len(qc.qubits) == 0:
         raise ValueError("Cannot measure an empty qubit collection")
     
-    results = [bit_measure(q) for q in qc.qubits]
-    return int("".join(map(str, results)), 2)
+    results = sum([bit_measure(q) * (1 << i) for i, q in enumerate(qc.qubits)])
+
+    return results
 
 def bitwiseH(qc: QubitCollection) -> None:
     for q in qc.qubits:

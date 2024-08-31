@@ -1,6 +1,7 @@
 
 from .core import QubitCollection
 from . import reggate
+from . import bitgate
 
 from collections import deque
 from typing import List
@@ -61,10 +62,16 @@ class QuantumOperation:
     
 
 class CreateOperation(QuantumOperation):
+    def __init__(self, n: int, value: int = 0):
+        super().__init__(n)
+        self.value = value
+
     def forward(self):
         self._reg = QubitCollection(self.n)
+        reggate.maskedBitwiseX(self.reg, self.value)
 
     def backward(self):
+        reggate.maskedBitwiseX(self.reg, self.value)
         reggate.measure(self.reg)
         self._reg = None
 
@@ -156,3 +163,16 @@ class BitOrOperation(QuantumOperation):
         reggate.bitwiseX(self.children[1].reg)
         reggate.measure(self.reg)
         self._reg = None
+
+
+class EqualImmediateOperation(QuantumOperation):
+    def __init__(self, child: QuantumOperation, value: int):
+        super().__init__(1)
+        self.children.append(child)
+        self.value = value
+    
+    def forward(self):
+        self._reg = QubitCollection(self.n)
+        reggate.maskedBitwiseX(self.children[0].reg, self.value)
+        bitgate.MCX(self.children[0].reg.qubits, self.reg.qubits[0])
+
