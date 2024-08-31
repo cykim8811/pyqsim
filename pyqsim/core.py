@@ -28,9 +28,6 @@ class QuantumRegister:
     def copy(self):
         return QuantumRegister(operations.CopyOperation(self.transform))
 
-    def measure(self) -> int:
-        return reggate.measure(self.transform.reg)
-
     def __and__(self, other: 'QuantumRegister') -> 'QuantumRegister':
         return QuantumRegister(operations.BitAndOperation(self.transform, other.transform))
 
@@ -43,3 +40,4 @@ class QuantumRegister:
         
         # return QuantumRegister(operations.EqualOperation(self.transform, value.transform))
         raise NotImplementedError("Equality comparison between two quantum registers is not yet implemented")
+
