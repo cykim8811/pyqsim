@@ -30,3 +30,9 @@ class QuantumRegister:
 
     def measure(self) -> int:
         return reggate.measure(self.transform.reg)
+
+    def __and__(self, other: 'QuantumRegister') -> 'QuantumRegister':
+        return QuantumRegister(operations.BitAndOperation(self.transform, other.transform))
+
+    def __or__(self, other: 'QuantumRegister') -> 'QuantumRegister':
+        return QuantumRegister(operations.BitOrOperation(self.transform, other.transform))
