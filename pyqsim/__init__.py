@@ -6,3 +6,5 @@ from . import qubit
 from . import types
 from . import operations
 from . import gates
+
+__version__ = "0.0.2"

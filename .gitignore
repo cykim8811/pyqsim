@@ -1,3 +1,5 @@
 run.sh
 pyqsim.egg-info/
 __pycache__/
+build/
+dist/
