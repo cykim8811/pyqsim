@@ -2,6 +2,7 @@
 from typing import List
 from .qubit import QubitCollection
 from .bitgate import *
+import math
 
 def bitwiseX(qc: QubitCollection) -> None:
     for q in qc.qubits:
@@ -46,4 +47,36 @@ def bitwiseMCX(controls: List[QubitCollection], target: QubitCollection) -> None
 def bitwiseZ(qc: QubitCollection) -> None:
     for q in qc.qubits:
         Z(q)
+
+def QFT(qc: QubitCollection) -> None:
+    n = len(qc.qubits)
+    
+    qc.qubits.reverse()
+    
+    for i in range(n):
+        # Apply Hadamard gate to the current qubit
+        H(qc.qubits[i])
+        
+        # Apply controlled rotation gates
+        for j in range(i + 1, n):
+            k = j - i
+            CPHASE(qc.qubits[j], qc.qubits[i], math.pi / (2 ** k))
+    
+    qc.qubits.reverse()
+    
+def IQFT(qc: QubitCollection) -> None:
+    n = len(qc.qubits)
+    
+    qc.qubits.reverse()
+    
+    for i in range(n - 1, -1, -1):
+        # Apply inverse controlled rotation gates
+        for j in range(n - 1, i, -1):
+            k = j - i
+            CPHASE(qc.qubits[j], qc.qubits[i], -math.pi / (2 ** k))
+        
+        # Apply Hadamard gate to the current qubit
+        H(qc.qubits[i])
+    
+    qc.qubits.reverse()
 
