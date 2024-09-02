@@ -80,3 +80,48 @@ def IQFT(qc: QubitCollection) -> None:
     
     qc.qubits.reverse()
 
+def addition(target: QubitCollection, operand: QubitCollection) -> None:
+    if len(target.qubits) != len(operand.qubits):
+        raise ValueError("Target and operand qubit collections must have the same length")
+    
+    n = len(target.qubits)
+    
+    QFT(target)
+
+    for i in range(n):
+        for k in range(i, n):
+            CPHASE(target.qubits[k], operand.qubits[i], math.pi / (2 ** (k - i)))
+
+    IQFT(target)
+
+def subtraction(target: QubitCollection, operand: QubitCollection) -> None:
+    if len(target.qubits) != len(operand.qubits):
+        raise ValueError("Target and operand qubit collections must have the same length")
+    
+    n = len(target.qubits)
+    
+    QFT(target)
+
+    for i in range(n):
+        for k in range(i, n):
+            CPHASE(target.qubits[k], operand.qubits[i], -math.pi / (2 ** (k - i)))
+
+    IQFT(target)
+
+def multiplication(a: QubitCollection, b: QubitCollection, result: QubitCollection) -> None:
+    if len(result.qubits) < len(a.qubits) + len(b.qubits):
+        raise ValueError("Result qubit collection must have at least twice the length of the input qubit collections")
+    
+    n_a = len(a.qubits)
+    n_b = len(b.qubits)
+    n_result = len(result.qubits)
+    
+    QFT(result)
+    
+    for i in range(n_a):
+        for j in range(n_b):
+            for k in range(n_result):
+                MCPHASE([a.qubits[i], b.qubits[j]], result.qubits[k], math.pi / 2 **(k-i-j))
+
+    IQFT(result)
+
