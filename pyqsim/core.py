@@ -41,3 +41,9 @@ class QuantumRegister:
         # return QuantumRegister(operations.EqualOperation(self.transform, value.transform))
         raise NotImplementedError("Equality comparison between two quantum registers is not yet implemented")
 
+    def __add__(self, other: 'QuantumRegister') -> 'QuantumRegister':
+        return QuantumRegister(operations.AddOperation(self.transform, other.transform))
+    
+    def __sub__(self, other: 'QuantumRegister') -> 'QuantumRegister':
+        return QuantumRegister(operations.SubOperation(self.transform, other.transform))
+

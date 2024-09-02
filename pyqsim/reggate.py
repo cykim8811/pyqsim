@@ -94,3 +94,18 @@ def addition(target: QubitCollection, operand: QubitCollection) -> None:
 
     IQFT(target)
 
+def subtraction(target: QubitCollection, operand: QubitCollection) -> None:
+    if len(target.qubits) != len(operand.qubits):
+        raise ValueError("Target and operand qubit collections must have the same length")
+    
+    n = len(target.qubits)
+    
+    QFT(target)
+
+    for i in range(n):
+        for k in range(i, n):
+            CPHASE(target.qubits[k], operand.qubits[i], -math.pi / (2 ** (k - i)))
+
+    IQFT(target)
+
+

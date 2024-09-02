@@ -5,10 +5,10 @@ import numpy as np
 from pyqsim.types import qint
 from pyqsim.gates import qft, measure
 
-a = qint(5, size=4)
-b = qint(12 , size=4)
+a = qint(15, size=4)
+b = qint(7, size=4)
 
-pq.reggate.addition(a.transform.reg, b.transform.reg)
+c = a - b
 
-print(measure(a), measure(b))
+print(measure(c))
 
