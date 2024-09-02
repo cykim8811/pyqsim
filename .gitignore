@@ -3,3 +3,4 @@ pyqsim.egg-info/
 __pycache__/
 build/
 dist/
+test.py

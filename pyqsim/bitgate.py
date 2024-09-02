@@ -103,7 +103,11 @@ def bit_measure(q: Qubit) -> int:
     return result
 
 def entangle(qubits: List[Qubit]) -> None:
-    quantum_states = list(set([qubit.quantum_state for qubit in qubits]))
+    # quantum_states = list(set([qubit.quantum_state for qubit in qubits]))
+    quantum_states = []
+    for qubit in qubits:
+        if qubit.quantum_state not in quantum_states:
+            quantum_states.append(qubit.quantum_state)
     
     if len(quantum_states) == 1:
         return
@@ -125,4 +129,15 @@ def H(q: Qubit) -> None:
     one_indices = np.where((np.arange(quantum_state.state.size) & mask) != 0)
 
     quantum_state.state[zero_indices], quantum_state.state[one_indices] = (quantum_state.state[zero_indices] + quantum_state.state[one_indices]) / np.sqrt(2), (quantum_state.state[zero_indices] - quantum_state.state[one_indices]) / np.sqrt(2)
+
+def CPHASE(control: Qubit, target: Qubit, phi: float) -> None:
+    entangle([control, target])
+    quantum_state = control.quantum_state
+
+    control_index = quantum_state.qubits.index(control)
+    target_index = quantum_state.qubits.index(target)
+
+    mask = (1 << control_index) | (1 << target_index)
+
+    quantum_state.state[(np.arange(quantum_state.state.size) & mask) == mask] *= np.exp(1j * phi)
 
