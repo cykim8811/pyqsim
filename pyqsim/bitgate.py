@@ -24,6 +24,14 @@ def Z(q: Qubit) -> None:
 
     quantum_state.state[(np.arange(quantum_state.state.size) & mask) != 0] *= -1
 
+def P(q: Qubit, phi: float) -> None:
+    quantum_state: QuantumState = q.quantum_state
+    index = quantum_state.qubits.index(q)
+
+    mask = 1 << index
+
+    quantum_state.state[(np.arange(quantum_state.state.size) & mask) != 0] *= np.exp(1j * phi)
+
 def CNOT(control: Qubit, target: Qubit) -> None:
     entangle([control, target])
     quantum_state = control.quantum_state
@@ -141,3 +149,16 @@ def CPHASE(control: Qubit, target: Qubit, phi: float) -> None:
 
     quantum_state.state[(np.arange(quantum_state.state.size) & mask) == mask] *= np.exp(1j * phi)
 
+def MCPHASE(controls: List[Qubit], target: Qubit, phi: float) -> None:
+    entangle(controls + [target])
+    quantum_state = controls[0].quantum_state
+
+    control_indices = [quantum_state.qubits.index(q) for q in controls]
+    target_index = quantum_state.qubits.index(target)
+
+    mask = 0
+    for index in control_indices:
+        mask |= 1 << index
+    mask |= 1 << target_index
+
+    quantum_state.state[(np.arange(quantum_state.state.size) & mask) == mask] *= np.exp(1j * phi)
