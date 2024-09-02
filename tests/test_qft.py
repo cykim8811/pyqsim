@@ -2,13 +2,13 @@
 import pyqsim as pq
 import numpy as np
 
-for i in range(4):
-    a = pq.types.qint2_t(i)
-    pq.bitgate.entangle([a.transform.reg.qubits[1], a.transform.reg.qubits[0]])
+from pyqsim.types import qint
+from pyqsim.gates import qft, measure
 
-    pq.gates.qft(a)
+a = qint(5, size=4)
+b = qint(12 , size=4)
 
-    display = np.round(a.transform.reg.qubits[0].quantum_state.state, 3) * 2
-    print(display)
+pq.reggate.addition(a.transform.reg, b.transform.reg)
 
+print(measure(a), measure(b))
 
