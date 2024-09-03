@@ -191,12 +191,14 @@ class EqualImmediateOperation(QuantumOperation):
     
     def forward(self):
         self._reg = QubitCollection(self.n)
-        reggate.maskedBitwiseX(self.children[0].reg, (1<<self.children[0].n) - self.value - 1)
+        reggate.maskedBitwiseX(self.children[0].reg, ~self.value)
         bitgate.MCX(self.children[0].reg.qubits, self.reg.qubits[0])
+        reggate.maskedBitwiseX(self.children[0].reg, ~self.value)
 
     def backward(self):
+        reggate.maskedBitwiseX(self.children[0].reg, ~self.value)
         bitgate.MCX(self.children[0].reg.qubits, self.reg.qubits[0])
-        reggate.maskedBitwiseX(self.children[0].reg, (1<<self.children[0].n) - self.value - 1)
+        reggate.maskedBitwiseX(self.children[0].reg, ~self.value)
         reggate.measure(self.reg)
         self._reg = None
 
