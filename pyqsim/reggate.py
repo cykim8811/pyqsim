@@ -125,3 +125,21 @@ def multiplication(a: QubitCollection, b: QubitCollection, result: QubitCollecti
 
     IQFT(result)
 
+def inv_multiplication(a: QubitCollection, b: QubitCollection, result: QubitCollection) -> None:
+    if len(result.qubits) < len(a.qubits) + len(b.qubits):
+        raise ValueError("Result qubit collection must have at least twice the length of the input qubit collections")
+    
+    n_a = len(a.qubits)
+    n_b = len(b.qubits)
+    n_result = len(result.qubits)
+    
+    QFT(result)
+
+    for i in reversed(range(n_a)):
+        for j in reversed(range(n_b)):
+            for k in reversed(range(n_result)):
+                MCPHASE([a.qubits[i], b.qubits[j]], result.qubits[k], -math.pi / 2 **(k-i-j))
+
+    IQFT(result)
+
+

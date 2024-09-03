@@ -141,6 +141,24 @@ class BitAndOperation(QuantumOperation):
         self._reg = None
 
 
+class BitXorOperation(QuantumOperation):
+    def __init__(self, child1: QuantumOperation, child2: QuantumOperation):
+        super().__init__(child1.n)
+        self.children.append(child1)
+        self.children.append(child2)
+    
+    def forward(self):
+        self._reg = QubitCollection(self.n)
+        reggate.bitwiseCNOT(self.children[0].reg, self.reg)
+        reggate.bitwiseCNOT(self.children[1].reg, self.reg)
+
+    def backward(self):
+        reggate.bitwiseCNOT(self.children[1].reg, self.reg)
+        reggate.bitwiseCNOT(self.children[0].reg, self.reg)
+        reggate.measure(self.reg)
+        self._reg = None
+
+
 class BitOrOperation(QuantumOperation):
     def __init__(self, child1: QuantumOperation, child2: QuantumOperation):
         super().__init__(child1.n)
@@ -230,7 +248,7 @@ class MultiplyOperation(QuantumOperation):
         reggate.multiplication(self.children[0].reg, self.children[1].reg, self.reg)
 
     def backward(self):
-        reggate.multiplication(self.children[0].reg, self.children[1].reg, self.reg)
+        reggate.inv_multiplication(self.children[0].reg, self.children[1].reg, self.reg)
         reggate.measure(self.reg)
         self._reg = None
 
