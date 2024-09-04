@@ -22,14 +22,14 @@ Here's a simple example implementing Deutsch's algorithm:
 
 ```python
 import pyqsim
+from pyqsim.types import qint
 from pyqsim.gates import h, z
 
 def oracle(x): return x  # Constant function
 
-a = pyqsim.types.qint1_t()
+a = qint(0, size=1)
 z(oracle(h(a)))
-result = pyqsim.gates.measure(a)
-print("Constant" if result == 0 else "Balanced")
+print("Constant" if int(result) == 0 else "Balanced")
 ```
 
 ## Advanced Usage
@@ -38,7 +38,7 @@ Check out the `examples/` directory for more complex quantum algorithms implemen
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+We welcome contributions! Please contact me through email.
 
 ## License
 
