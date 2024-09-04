@@ -3,8 +3,7 @@ from .qubit import Qubit, QuantumState
 
 import numpy as np
 import math
-
-from typing import List
+from typing import List, Callable
 
 
 def X(q: Qubit) -> None:
@@ -436,3 +435,32 @@ def mod_multiplication_controlled(a: List[Qubit], b: List[Qubit], target: List[Q
         mod_addition_controlled(target, b, modulus, a[i])
         mod_addition(b, b, modulus)
 
+def arbitrary_operation(qubits: List[Qubit], target: List[Qubit], operation: Callable[[int], int]) -> None:
+    if len(target) != len(qubits):
+        raise ValueError("Target qubits must have the same length as the input qubits")
+    
+    entangle(qubits + target)
+    quantum_state = qubits[0].quantum_state
+    
+    n = len(qubits)
+    
+    input_indices = [q.quantum_state.qubits.index(q) for q in qubits]
+    target_indices = [q.quantum_state.qubits.index(q) for q in target]
+
+    new_indices = np.arange(quantum_state.state.size)
+    for i in range(2 ** n):
+        mask_input = sum([1 << index for index in input_indices])
+        value_input = sum([1 << index for index in input_indices if i & (1 << index)])
+
+        result = operation(i)
+
+        mask_target = sum([1 << index for index in target_indices])
+        value_target = sum([1 << index for j, index in enumerate(target_indices) if result & (1 << j)])
+        
+        mask_initial_ind = (new_indices & mask_input == value_input) & (new_indices & mask_target == 0)
+        mask_target_ind = (new_indices & mask_input == value_input) & (new_indices & mask_target == value_target)
+        new_indices[mask_initial_ind], new_indices[mask_target_ind] = new_indices[mask_target_ind], new_indices[mask_initial_ind]
+    
+    quantum_state.state = quantum_state.state[new_indices]
+        
+        
