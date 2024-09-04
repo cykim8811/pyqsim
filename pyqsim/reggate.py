@@ -49,97 +49,19 @@ def bitwiseZ(qc: QubitCollection) -> None:
         Z(q)
 
 def QFT(qc: QubitCollection) -> None:
-    n = len(qc.qubits)
-    
-    qc.qubits.reverse()
-    
-    for i in range(n):
-        # Apply Hadamard gate to the current qubit
-        H(qc.qubits[i])
-        
-        # Apply controlled rotation gates
-        for j in range(i + 1, n):
-            k = j - i
-            CPHASE(qc.qubits[j], qc.qubits[i], math.pi / (2 ** k))
-    
-    qc.qubits.reverse()
+    bit_QFT(qc.qubits)
     
 def IQFT(qc: QubitCollection) -> None:
-    n = len(qc.qubits)
-    
-    qc.qubits.reverse()
-    
-    for i in range(n - 1, -1, -1):
-        # Apply inverse controlled rotation gates
-        for j in range(n - 1, i, -1):
-            k = j - i
-            CPHASE(qc.qubits[j], qc.qubits[i], -math.pi / (2 ** k))
-        
-        # Apply Hadamard gate to the current qubit
-        H(qc.qubits[i])
-    
-    qc.qubits.reverse()
+    bit_IQFT(qc.qubits)
 
 def addition(target: QubitCollection, operand: QubitCollection) -> None:
-    if len(target.qubits) != len(operand.qubits):
-        raise ValueError("Target and operand qubit collections must have the same length")
-    
-    n = len(target.qubits)
-    
-    QFT(target)
-
-    for i in range(n):
-        for k in range(i, n):
-            CPHASE(target.qubits[k], operand.qubits[i], math.pi / (2 ** (k - i)))
-
-    IQFT(target)
+    bit_addition(target.qubits, operand.qubits)
 
 def subtraction(target: QubitCollection, operand: QubitCollection) -> None:
-    if len(target.qubits) != len(operand.qubits):
-        raise ValueError("Target and operand qubit collections must have the same length")
-    
-    n = len(target.qubits)
-    
-    QFT(target)
-
-    for i in range(n):
-        for k in range(i, n):
-            CPHASE(target.qubits[k], operand.qubits[i], -math.pi / (2 ** (k - i)))
-
-    IQFT(target)
+    bit_subtraction(target.qubits, operand.qubits)
 
 def multiplication(a: QubitCollection, b: QubitCollection, result: QubitCollection) -> None:
-    if len(result.qubits) < len(a.qubits) + len(b.qubits):
-        raise ValueError("Result qubit collection must have at least twice the length of the input qubit collections")
-    
-    n_a = len(a.qubits)
-    n_b = len(b.qubits)
-    n_result = len(result.qubits)
-    
-    QFT(result)
-    
-    for i in range(n_a):
-        for j in range(n_b):
-            for k in range(n_result):
-                MCPHASE([a.qubits[i], b.qubits[j]], result.qubits[k], math.pi / 2 **(k-i-j))
-
-    IQFT(result)
+    bit_multiplication(a.qubits, b.qubits, result.qubits)
 
 def inv_multiplication(a: QubitCollection, b: QubitCollection, result: QubitCollection) -> None:
-    if len(result.qubits) < len(a.qubits) + len(b.qubits):
-        raise ValueError("Result qubit collection must have at least twice the length of the input qubit collections")
-    
-    n_a = len(a.qubits)
-    n_b = len(b.qubits)
-    n_result = len(result.qubits)
-    
-    QFT(result)
-
-    for i in reversed(range(n_a)):
-        for j in reversed(range(n_b)):
-            for k in reversed(range(n_result)):
-                MCPHASE([a.qubits[i], b.qubits[j]], result.qubits[k], -math.pi / 2 **(k-i-j))
-
-    IQFT(result)
-
-
+    bit_inv_multiplication(a.qubits, b.qubits, result.qubits)
