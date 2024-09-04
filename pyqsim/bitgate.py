@@ -367,6 +367,40 @@ def mod_addition(target: List[Qubit], operand: List[Qubit], modulus: int) -> Non
         bit_measure(operand[-1])
         del operand[-1]
 
+def mod_addition_controlled(target: List[Qubit], operand: List[Qubit], modulus: int, control: Qubit) -> None:
+    if len(target) < len(operand):
+        raise ValueError("Target qubits must have at least as many qubits as the operand qubits")
+    
+    n_operand = len(operand)
+    target.append(Qubit())  # add an extra qubit for the carry bit
+    operand.extend([Qubit() for _ in range(len(target) - len(operand))]) # pad the operand with extra qubits if necessary
+    sign_bit = Qubit()
+
+    n = len(operand)
+
+    bit_addition(target, operand)
+    bit_subtraction_immediate_controlled(target, modulus, control)
+
+    CNOT(target[-1], sign_bit)
+
+    bit_addition_immediate_controlled(target, modulus, sign_bit)
+
+    bit_subtraction(target, operand)
+
+    CNOT(target[-1], sign_bit)
+
+    bit_addition_controlled(target, operand, control)
+
+    bit_measure(sign_bit)
+    del sign_bit
+
+    bit_measure(target[-1])
+    del target[-1]
+
+    for _ in range(n_operand, n):
+        bit_measure(operand[-1])
+        del operand[-1]
+
 def mod_multiplication_immediate(a: List[Qubit], value: int, target: List[Qubit], modulus: int) -> None:
     if len(target) < len(a):
         raise ValueError("Target qubits must have at least as many qubits as the operand qubits")
@@ -388,24 +422,17 @@ def mod_multiplication_immediate(a: List[Qubit], value: int, target: List[Qubit]
         bit_measure(temp_b[-1])
         del temp_b[-1]
         
-def mod_multiplication_immediate_controlled(a: List[Qubit], value: int, target: List[Qubit], modulus: int, control: Qubit) -> None:
-    if len(target) < len(a):
-        raise ValueError("Target qubits must have at least as many qubits as the operand qubits")
+def mod_multiplication_controlled(a: List[Qubit], b: List[Qubit], target: List[Qubit], modulus: int, control: Qubit) -> None:
+    if len(target) < len(a) + len(b):
+        raise ValueError("Target qubits must have at least twice the length of the input qubit collections")
     
     n_a = len(a)
+    n_b = len(b)
     n_target = len(target)
 
-    temp_b = [Qubit() for _ in range(n_target)]
-    
-    for i in range(n_a):
-        b_target = (value << i) % modulus
-        for j in range(n_target):
-            if (b_target >> j) & 1: MCX([control, a[i]], temp_b[j])
-        mod_addition(target, temp_b, modulus)
-        for j in range(n_target):
-            if (b_target >> j) & 1: MCX([control, a[i]], temp_b[j])
+    b.extend([Qubit() for _ in range(n_target - len(b))])
 
-    for j in range(n_target):
-        bit_measure(temp_b[-1])
-        del temp_b[-1]
-        
+    for i in range(n_a):
+        mod_addition_controlled(target, b, modulus, a[i])
+        mod_addition(b, b, modulus)
+
