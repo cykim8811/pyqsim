@@ -56,6 +56,9 @@ class QuantumRegister:
     def __int__(self) -> int:
         return reggate.measure(self.transform.reg)
     
+    def __bool__(self) -> bool:
+        return bool(int(self))
+    
     def __str__(self) -> str:
         return str(int(self))
     
