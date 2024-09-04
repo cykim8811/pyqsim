@@ -254,3 +254,20 @@ class MultiplyOperation(QuantumOperation):
         reggate.measure(self.reg)
         self._reg = None
 
+
+class QFTOperation(QuantumOperation):
+    def __init__(self, child: QuantumOperation):
+        super().__init__(child.n)
+        self.children.append(child)
+    
+    def forward(self):
+        self._reg = QubitCollection(self.n)
+        self.children[0]._reg, self._reg = self._reg, self.children[0]._reg
+        reggate.QFT(self.reg)
+
+    def backward(self):
+        reggate.IQFT(self.reg)
+        self.children[0]._reg, self._reg = self._reg, self.children[0]._reg
+        reggate.measure(self.reg)
+        self._reg = None
+

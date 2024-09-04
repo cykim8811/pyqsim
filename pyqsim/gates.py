@@ -9,11 +9,8 @@ def h(qr: QuantumRegister) -> QuantumRegister:
 def z(qr: QuantumRegister) -> None:
     operations.reggate.bitwiseZ(qr.transform.reg)
 
-def qft(qr: QuantumRegister) -> None:
-    reggate.QFT(qr.transform.reg)
-
-def iqft(qr: QuantumRegister) -> None:
-    reggate.IQFT(qr.transform.reg)
+def qft(qr: QuantumRegister) -> QuantumRegister:
+    return QuantumRegister(operations.QFTOperation(qr.transform))
 
 def measure(qr: QuantumRegister) -> int:
     return reggate.measure(qr.transform.reg)
