@@ -436,9 +436,6 @@ def mod_multiplication_controlled(a: List[Qubit], b: List[Qubit], target: List[Q
         mod_addition(b, b, modulus)
 
 def arbitrary_operation(qubits: List[Qubit], target: List[Qubit], operation: Callable[[int], int]) -> None:
-    if len(target) != len(qubits):
-        raise ValueError("Target qubits must have the same length as the input qubits")
-    
     entangle(qubits + target)
     quantum_state = qubits[0].quantum_state
     
