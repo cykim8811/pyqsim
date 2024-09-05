@@ -25,7 +25,7 @@ import pyqsim
 from pyqsim.types import qint
 from pyqsim.gates import h, z
 
-def oracle(x): return x  # Constant function
+def oracle(x): return x & ~x  # Constant function
 
 a = qint(0, size=1)
 z(oracle(h(a)))
