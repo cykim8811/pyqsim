@@ -29,7 +29,7 @@ def oracle(x): return x & ~x  # Constant function
 
 a = qint(0, size=1)
 z(oracle(h(a)))
-print("Constant" if int(result) == 0 else "Balanced")
+print("Constant" if int(a) == 0 else "Balanced")
 ```
 
 ## Advanced Usage
