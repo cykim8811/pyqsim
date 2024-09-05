@@ -271,3 +271,20 @@ class QFTOperation(QuantumOperation):
         reggate.measure(self.reg)
         self._reg = None
 
+
+class ArbitraryOperation(QuantumOperation):
+    def __init__(self, child: QuantumOperation, ftn, output_size: int = -1):
+        super().__init__(child.n)
+        self.children.append(child)
+        self.ftn = ftn
+        self.output_size = output_size if output_size != -1 else len(child.reg.qubits)
+    
+    def forward(self):
+        self._reg = QubitCollection(self.n)
+        bitgate.arbitrary_operation(self.children[0].reg.qubits, self.reg.qubits, self.ftn)
+
+    def backward(self):
+        bitgate.arbitrary_operation(self.children[0].reg.qubits, self.reg.qubits, self.ftn)
+        reggate.measure(self.reg)
+        self._reg = None
+

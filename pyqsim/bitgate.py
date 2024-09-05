@@ -2,8 +2,8 @@
 from .qubit import Qubit, QuantumState
 
 import numpy as np
-
-from typing import List
+import math
+from typing import List, Callable
 
 
 def X(q: Qubit) -> None:
@@ -169,13 +169,13 @@ def bit_addition(target: List[Qubit], operand: List[Qubit]) -> None:
     
     n = len(target)
     
-    QFT(target)
+    bit_QFT(target)
 
     for i in range(n):
         for k in range(i, n):
             CPHASE(target[k], operand[i], 2 * np.pi / (2 ** (k - i + 1)))
 
-    IQFT(target)
+    bit_IQFT(target)
 
 def bit_subtraction(target: List[Qubit], operand: List[Qubit]) -> None:
     if len(target) < len(operand):
@@ -183,13 +183,85 @@ def bit_subtraction(target: List[Qubit], operand: List[Qubit]) -> None:
     
     n = len(target)
     
-    QFT(target)
+    bit_QFT(target)
 
     for i in range(n):
         for k in range(i, n):
             CPHASE(target[k], operand[i], -2 * np.pi / (2 ** (k - i + 1)))
 
-    IQFT(target)
+    bit_IQFT(target)
+
+def bit_addition_immediate(target: List[Qubit], value: int) -> None:
+    n = len(target)
+    
+    bit_QFT(target)
+
+    for i in range(n):
+        if value & 1:
+            for k in range(i, n):
+                P(target[k], 2 * np.pi / (2 ** (k - i + 1)))
+        value >>= 1
+
+    bit_IQFT(target)
+
+def bit_subtraction_immediate(target: List[Qubit], value: int) -> None:
+    n = len(target)
+    
+    bit_QFT(target)
+
+    for i in range(n):
+        if value & 1:
+            for k in range(i, n):
+                P(target[k], -2 * np.pi / (2 ** (k - i + 1)))
+        value >>= 1
+
+    bit_IQFT(target)
+
+def bit_addition_immediate_controlled(target: List[Qubit], value: int, control: Qubit) -> None:
+    n = len(target)
+    
+    bit_QFT(target)
+
+    for i in range(n):
+        if value & 1:
+            for k in range(i, n):
+                CPHASE(target[k], control, 2 * np.pi / (2 ** (k - i + 1)))
+        value >>= 1
+
+    bit_IQFT(target)
+
+def bit_subtraction_immediate_controlled(target: List[Qubit], value: int, control: Qubit) -> None:
+    n = len(target)
+    
+    bit_QFT(target)
+
+    for i in range(n):
+        if value & 1:
+            for k in range(i, n):
+                CPHASE(target[k], control, -2 * np.pi / (2 ** (k - i + 1)))
+        value >>= 1
+
+    bit_IQFT(target)
+
+def bit_addition_controlled(target: List[Qubit], operand: List[Qubit], control: Qubit) -> None:
+    if len(target) < len(operand):
+        raise ValueError("Target qubits must have at least as many qubits as the operand qubits")
+    
+    n = len(target)
+    anc = Qubit()
+    
+    bit_QFT(target)
+
+    for i in range(n):
+        for k in range(i, n):
+            MCX([control, operand[i]], anc)
+            CPHASE(target[k], anc, 2 * np.pi / (2 ** (k - i + 1)))
+            MCX([control, operand[i]], anc)
+
+    bit_IQFT(target)
+
+    bit_measure(anc)
+    del anc
 
 def bit_QFT(qubits: List[Qubit]) -> None:
     n = len(qubits)
@@ -231,14 +303,14 @@ def bit_multiplication(a: List[Qubit], b: List[Qubit], result: List[Qubit]) -> N
     n_b = len(b)
     n_result = len(result)
     
-    QFT(result)
+    bit_QFT(result)
     
     for i in range(n_a):
         for j in range(n_b):
             for k in range(n_result):
                 MCPHASE([a[i], b[j]], result[k], math.pi / 2 **(k-i-j))
 
-    IQFT(result)
+    bit_IQFT(result)
 
 def bit_inv_multiplication(a: List[Qubit], b: List[Qubit], result: List[Qubit]) -> None:
     if len(result) < len(a) + len(b):
@@ -248,12 +320,144 @@ def bit_inv_multiplication(a: List[Qubit], b: List[Qubit], result: List[Qubit]) 
     n_b = len(b)
     n_result = len(result)
     
-    QFT(result)
+    bit_QFT(result)
 
     for i in reversed(range(n_a)):
         for j in reversed(range(n_b)):
             for k in reversed(range(n_result)):
                 MCPHASE([a[i], b[j]], result[k], -math.pi / 2 **(k-i-j))
 
-    IQFT(result)
+    bit_IQFT(result)
 
+# modular exponentiation circuit by Anatolii - Quantum Computing Stack Exchange
+# https://quantumcomputing.stackexchange.com/questions/6842/is-there-a-simple-formulaic-way-to-construct-a-modular-exponentiation-circuit
+
+def mod_addition(target: List[Qubit], operand: List[Qubit], modulus: int) -> None:
+    if len(target) < len(operand):
+        raise ValueError("Target qubits must have at least as many qubits as the operand qubits")
+    
+    n_operand = len(operand)
+    target.append(Qubit())  # add an extra qubit for the carry bit
+    operand.extend([Qubit() for _ in range(len(target) - len(operand))]) # pad the operand with extra qubits if necessary
+    sign_bit = Qubit()
+
+    n = len(operand)
+
+    bit_addition(target, operand)
+    bit_subtraction_immediate(target, modulus)
+
+    CNOT(target[-1], sign_bit)
+
+    bit_addition_immediate_controlled(target, modulus, sign_bit)
+
+    bit_subtraction(target, operand)
+
+    CNOT(target[-1], sign_bit)
+
+    bit_addition(target, operand)
+
+    bit_measure(sign_bit)
+    del sign_bit
+
+    bit_measure(target[-1])
+    del target[-1]
+
+    for _ in range(n_operand, n):
+        bit_measure(operand[-1])
+        del operand[-1]
+
+def mod_addition_controlled(target: List[Qubit], operand: List[Qubit], modulus: int, control: Qubit) -> None:
+    if len(target) < len(operand):
+        raise ValueError("Target qubits must have at least as many qubits as the operand qubits")
+    
+    n_operand = len(operand)
+    target.append(Qubit())  # add an extra qubit for the carry bit
+    operand.extend([Qubit() for _ in range(len(target) - len(operand))]) # pad the operand with extra qubits if necessary
+    sign_bit = Qubit()
+
+    n = len(operand)
+
+    bit_addition(target, operand)
+    bit_subtraction_immediate_controlled(target, modulus, control)
+
+    CNOT(target[-1], sign_bit)
+
+    bit_addition_immediate_controlled(target, modulus, sign_bit)
+
+    bit_subtraction(target, operand)
+
+    CNOT(target[-1], sign_bit)
+
+    bit_addition_controlled(target, operand, control)
+
+    bit_measure(sign_bit)
+    del sign_bit
+
+    bit_measure(target[-1])
+    del target[-1]
+
+    for _ in range(n_operand, n):
+        bit_measure(operand[-1])
+        del operand[-1]
+
+def mod_multiplication_immediate(a: List[Qubit], value: int, target: List[Qubit], modulus: int) -> None:
+    if len(target) < len(a):
+        raise ValueError("Target qubits must have at least as many qubits as the operand qubits")
+    
+    n_a = len(a)
+    n_target = len(target)
+
+    temp_b = [Qubit() for _ in range(n_target)]
+    
+    for i in range(n_a):
+        b_target = (value << i) % modulus
+        for j in range(n_target):
+            if (b_target >> j) & 1: CNOT(a[i], temp_b[j])
+        mod_addition(target, temp_b, modulus)
+        for j in range(n_target):
+            if (b_target >> j) & 1: CNOT(a[i], temp_b[j])
+
+    for j in range(n_target):
+        bit_measure(temp_b[-1])
+        del temp_b[-1]
+        
+def mod_multiplication_controlled(a: List[Qubit], b: List[Qubit], target: List[Qubit], modulus: int, control: Qubit) -> None:
+    if len(target) < len(a) + len(b):
+        raise ValueError("Target qubits must have at least twice the length of the input qubit collections")
+    
+    n_a = len(a)
+    n_b = len(b)
+    n_target = len(target)
+
+    b.extend([Qubit() for _ in range(n_target - len(b))])
+
+    for i in range(n_a):
+        mod_addition_controlled(target, b, modulus, a[i])
+        mod_addition(b, b, modulus)
+
+def arbitrary_operation(qubits: List[Qubit], target: List[Qubit], operation: Callable[[int], int]) -> None:
+    entangle(qubits + target)
+    quantum_state = qubits[0].quantum_state
+    
+    n = len(qubits)
+    
+    input_indices = [q.quantum_state.qubits.index(q) for q in qubits]
+    target_indices = [q.quantum_state.qubits.index(q) for q in target]
+
+    new_indices = np.arange(quantum_state.state.size)
+    for i in range(2 ** n):
+        mask_input = sum([1 << index for index in input_indices])
+        value_input = sum([1 << index for index in input_indices if i & (1 << index)])
+
+        result = operation(i)
+
+        mask_target = sum([1 << index for index in target_indices])
+        value_target = sum([1 << index for j, index in enumerate(target_indices) if result & (1 << j)])
+        
+        mask_initial_ind = (new_indices & mask_input == value_input) & (new_indices & mask_target == 0)
+        mask_target_ind = (new_indices & mask_input == value_input) & (new_indices & mask_target == value_target)
+        new_indices[mask_initial_ind], new_indices[mask_target_ind] = new_indices[mask_target_ind], new_indices[mask_initial_ind]
+    
+    quantum_state.state = quantum_state.state[new_indices]
+        
+        
