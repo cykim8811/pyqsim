@@ -115,4 +115,8 @@ candidates = get_period_candidates(res_selected, max_depth=10)
 period = check_period_candidates(candidates, a, N)
 factor = shor_factorization(N, period)
 
-print(f"Factors of {N}: {factor}, {N // factor}")
+if factor is None:
+    print(f"Failed to find factors of {N}")
+else:
+    print(f"Factors of {N}: {factor}, {N // factor}")
+    
