@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyqsim',
-    version='0.0.3',
+    version='0.0.4',
     description='High-Level Quantum Computing Simulation in Python',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
