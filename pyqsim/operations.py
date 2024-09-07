@@ -239,6 +239,42 @@ class SubOperation(QuantumOperation):
         self._reg = None
 
 
+class AddImmediateOperation(QuantumOperation):
+    def __init__(self, child: QuantumOperation, value: int):
+        super().__init__(child.n)
+        self.children.append(child)
+        self.value = value
+    
+    def forward(self):
+        self._reg = QubitCollection(self.n)
+        reggate.bitwiseCNOT(self.children[0].reg, self.reg)
+        bitgate.bit_addition_immediate(self.reg.qubits, self.value)
+    
+    def backward(self):
+        bitgate.bit_subtraction_immediate(self.reg.qubits, self.value)
+        reggate.bitwiseCNOT(self.children[0].reg, self.reg)
+        reggate.measure(self.reg)
+        self._reg = None
+
+
+class SubImmediateOperation(QuantumOperation):
+    def __init__(self, child: QuantumOperation, value: int):
+        super().__init__(child.n)
+        self.children.append(child)
+        self.value = value
+    
+    def forward(self):
+        self._reg = QubitCollection(self.n)
+        reggate.bitwiseCNOT(self.children[0].reg, self.reg)
+        bitgate.bit_subtraction_immediate(self.reg.qubits, self.value)
+    
+    def backward(self):
+        bitgate.bit_addition_immediate(self.reg.qubits, self.value)
+        reggate.bitwiseCNOT(self.children[0].reg, self.reg)
+        reggate.measure(self.reg)
+        self._reg = None
+        
+
 class MultiplyOperation(QuantumOperation):
     def __init__(self, child1: QuantumOperation, child2: QuantumOperation):
         super().__init__(child1.n + child2.n)

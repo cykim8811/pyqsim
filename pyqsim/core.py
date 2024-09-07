@@ -44,10 +44,14 @@ class QuantumRegister:
     def __xor__(self, other: 'QuantumRegister') -> 'QuantumRegister':
         return QuantumRegister(operations.BitXorOperation(self.transform, other.transform))
 
-    def __add__(self, other: 'QuantumRegister') -> 'QuantumRegister':
+    def __add__(self, other: 'QuantumRegister|int') -> 'QuantumRegister':
+        if isinstance(other, int):
+            return QuantumRegister(operations.AddImmediateOperation(self.transform, other))
         return QuantumRegister(operations.AddOperation(self.transform, other.transform))
     
-    def __sub__(self, other: 'QuantumRegister') -> 'QuantumRegister':
+    def __sub__(self, other: 'QuantumRegister|int') -> 'QuantumRegister':
+        if isinstance(other, int):
+            return QuantumRegister(operations.SubImmediateOperation(self.transform, other))
         return QuantumRegister(operations.SubOperation(self.transform, other.transform))
 
     def __mul__(self, other: 'QuantumRegister') -> 'QuantumRegister':

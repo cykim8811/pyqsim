@@ -65,3 +65,9 @@ def multiplication(a: QubitCollection, b: QubitCollection, result: QubitCollecti
 
 def inv_multiplication(a: QubitCollection, b: QubitCollection, result: QubitCollection) -> None:
     bit_inv_multiplication(a.qubits, b.qubits, result.qubits)
+
+def addition_immediate(target: QubitCollection, value: int) -> None:
+    bit_addition_immediate(target.qubits, value)
+
+def subtraction_immediate(target: QubitCollection, value: int) -> None:
+    bit_subtraction_immediate(target.qubits, value)
