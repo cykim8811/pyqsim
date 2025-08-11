@@ -34,7 +34,7 @@ print("Constant" if int(a) == 0 else "Balanced")
 
 ## Advanced Usage
 
-Check out the `examples/` directory for more complex quantum algorithms implementations, including Grover's search algorithm.
+Check out the `tests/` directory for more complex quantum algorithms implementations, including Grover's search algorithm.
 
 ## Contributing
 
@@ -46,4 +46,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-For any queries or support, please open an issue on our GitHub repository or contact me at [cykim@snu.ac.kr](mailto:cykim@snu.ac.kr).
+For any queries or support, please open an issue on our GitHub repository or contact me at [cykim8811@snu.ac.kr](mailto:cykim8811@snu.ac.kr).
